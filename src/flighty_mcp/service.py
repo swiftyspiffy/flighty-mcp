@@ -176,7 +176,7 @@ class FlightyService:
         snapshot = await self.client.snapshot(token, refresh=refresh)
         records = (
             snapshot.owned(kind)
-            if kind in {"remoteUserFlight", "remoteUserManualFlight"}
+            if kind in {"remoteUserFlight", "remoteUserManualFlight", "remoteWhenToLeavePlan"}
             else snapshot.items(kind)
         )
         return {
@@ -184,6 +184,33 @@ class FlightyService:
             "total": len(records),
             "records": records[offset : offset + limit],
             "next_offset": offset + limit if offset + limit < len(records) else None,
+            "cache": cache_info(snapshot),
+        }
+
+    async def list_when_to_leave_plans(
+        self,
+        token: str,
+        *,
+        flight_id: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+        refresh: bool = False,
+    ) -> dict[str, Any]:
+        if not 1 <= limit <= 200 or offset < 0:
+            raise FlightyError("limit must be 1..200 and offset nonnegative.")
+        if flight_id is not None:
+            flight_id = uuid_text(flight_id)
+        snapshot = await self.client.snapshot(token, refresh=refresh)
+        plans = [
+            item
+            for item in snapshot.owned("remoteWhenToLeavePlan")
+            if flight_id is None or item.get("flight", {}).get("flightId") == flight_id
+        ]
+        plans.sort(key=lambda item: str(item.get("planId", "")))
+        return {
+            "total": len(plans),
+            "plans": plans[offset : offset + limit],
+            "next_offset": offset + limit if offset + limit < len(plans) else None,
             "cache": cache_info(snapshot),
         }
 

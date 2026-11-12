@@ -33,8 +33,31 @@ Social features and account deletion have not been live-tested. Other operations
 with automated/mock coverage only include random-flight additions, imports,
 export requests, live activities, account creation/linking, device registration,
 receipt uploads, attribution, promotions and year-in-review updates. Advanced
-sync actions beyond the core edits above have not been individually live-tested.
+sync actions beyond those core edits and the planner cases below have not been
+individually live-tested.
 Automated coverage does not establish that the live backend accepts every operation.
+
+Live validation on 2026-11-12 passed on one authorized account: ordinary flight
+reads, saved plans, departure holidays, a driving preview, Schengen flags and the
+2026 statistics distribution listing/decoder. The distribution decoded without
+unknown fields, including 13 global metrics and airline/airport thresholds.
+
+On a disposable upcoming regular flight, a new UUID plan ID was accepted for a
+manual plan. Complete-input saves changed the travel buffer and reminder flag;
+the derived leave time matched the expected arithmetic. REQUEST_REFRESH was
+accepted for that manual plan, DISABLE produced STOPPED, and DELETE removed it
+from normal reads. The test plan and flight were deleted. Final verification
+preserved every original flight and plan, including the original plan settings.
+
+The successful driving preview used a typed coordinate origin (CURRENT_LOCATION,
+UNKNOWN_DESTINATION quality, timezone/country/accuracy), an airport destination
+and departure context, with nativePreview omitted. A fabricated MANUAL-origin
+payload and a verbatim saved app-state payload returned HTTP 400. Those input
+shapes are not interchangeable with a server preview request.
+
+These results cover one account. Avatar removal, Passport share events, traffic
+simulation/reset, automatic traffic-alert delivery and actual notification delivery
+remain untested. No live responses or credentials were added to test fixtures.
 
 ## Read-only live check
 

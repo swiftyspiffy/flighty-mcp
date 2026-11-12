@@ -3,8 +3,9 @@
 Supported endpoints, request formats and operational limitations.
 
 - [Every ordinary HTTP endpoint and its tool](endpoints.md)
-- [All 43 sync actions and their field tags](sync-actions.md)
-- [`schema.json`](../src/flighty_mcp/data/schema.json): full 281-definition inventory.
+- [All 46 sync actions and their field tags](sync-actions.md)
+- [`schema.json`](../src/flighty_mcp/data/schema.json): 325 definitions (319 API
+  definitions and six statistics-distribution definitions).
 
 ## Transport
 
@@ -16,12 +17,19 @@ Authorization: Bearer <account credential>
 Accept: application/x-protobuf
 Content-Type: application/x-protobuf
 Accept-Encoding: gzip
-User-Agent: Flighty 4.11.1 (4818) com.flightyapp.flighty
+User-Agent: Flighty 4.12.0 (4875) com.flightyapp.flighty
 X-Flighty-Locale: en_US
+X-Flighty-Client-Capabilities: <unpadded base64url protobuf>
 Device: <existing registered device ID, when configured>
 ```
 
 JSON-specific operations switch Content-Type/Accept to `application/json`.
+The capability header encodes `ClientCapabilitiesProto`: generations `AIRPORT=1`
+and `WHEN_TO_LEAVE_PLAN=1`, with features `NON_ACTUAL_GATES`,
+`FLIGHT_CONTENT_IDS_ON_SYNC`, and `WHEN_TO_LEAVE`. Device registration and device
+sync changes default their new `capabilities` field to the same payload when the
+caller omits it. Explicit advanced payloads are preserved. Overriding User-Agent
+does not change the supported schema or capabilities.
 No device identity is generated automatically. HTTP errors report status/operation, not response bodies, credentials or sync cursors.
 No automatic retries are performed. Server quotas are undocumented. Search quota responses and HTTP 429 are surfaced
 without retries.
@@ -48,7 +56,9 @@ pre-existing deletion markers. Flight identity is **(userId, flightId)**, not
 flightId alone. Listing tools select this account's records, prefer newer updates
 and exclude deletion markers by default. Receiving a deletion marker never
 causes this client to send a deletion. `get_account_records` exposes all supported
-categories, redacting credentials. Its flight categories also restrict ownership.
+categories, redacting credentials. Its flight and When to Leave plan categories
+also restrict ownership. Plans merge by `(userId, planId)`; timestamp tombstones
+and the `DELETED` lifecycle are excluded from ordinary reads.
 
 ## Payloads and discovery
 
@@ -145,6 +155,79 @@ Generic/manual actions should be treated as complete replacements unless
 supervised testing establishes otherwise.
 Manual gate/runway Original/Actual fields are timestamps; `departureGate` and
 `arrivalGate` are the text gate identifiers.
+
+## Flighty 4.12 departure plans and Passport additions
+
+The two new HTTP operations use binary protobuf and do not submit sync changes:
+
+| Tool | Request | Response |
+| --- | --- | --- |
+| `get_when_to_leave_holidays` | `GET /v1/when-to-leave/online/{flight_id}/holidays`, no body | `RemotePublicHolidays` |
+| `estimate_when_to_leave` | `POST /v1/when-to-leave/online/{flight_id}/estimate`, `RemoteWhenToLeavePlan.Inputs` | `RemoteWhenToLeavePlan.Estimate` |
+
+Both generic endpoint tools take `path: {"flight_id": "<flight UUID>"}`. The estimate
+also takes `payload` matching the inputs schema. Neither accepts query parameters.
+An estimate previews travel/traffic data; saving a plan and enabling reminders
+requires the separate sync mutation. Both lookups passed scoped live checks on one
+account; access on other accounts/subscription tiers remains unverified. For driving
+previews, use typed coordinate places and departure context, and omit nativePreview.
+A saved app-state payload is not necessarily a valid server-preview request; see
+[validation details](testing.md).
+
+`list_when_to_leave_plans` reads the account's saved plans through the cached,
+bodyless sync path, optionally filtered by flight UUID. It returns complete
+`inputs` and `derived` state, including leave times, route estimates, traffic,
+verification/monitoring, freshness and failure information. Stopped and expired
+plans remain visible. `get_account_records('remoteWhenToLeavePlan')` and the
+corresponding account resource expose the same owned, nondeleted records.
+
+`save_when_to_leave_plan(plan_id, flight_id, inputs)` submits a `SAVE` action.
+Use the existing server plan ID when editing and provide complete inputs; this
+tool does not merge omitted fields. For a new plan, supply a fresh UUID. Creation
+was verified on one disposable regular flight; broader account/eligibility
+behavior remains unverified. Inputs support manual or
+automatic driving travel, starting/destination places, total/itemized airport
+allowances, buffers, traffic updates and departure reminders. Inspect the schema
+before constructing them. Example inputs for manual planning:
+
+```json
+{
+  "travelMode": "MANUAL",
+  "manualDurationSeconds": "1800",
+  "allowance": {"mode": "TOTAL", "totalSeconds": "7200"},
+  "travelBufferSeconds": "600",
+  "departureRemindersRequested": true
+}
+```
+
+`change_when_to_leave_plan` sends `DISABLE`, `DELETE`, or `REQUEST_REFRESH` for a
+known plan ID. `DELETE` requires `confirm_destructive=true`, including when sent
+through generic `apply_changes`. Numeric enum value 3 receives the same check.
+The compiled diagnostic commands `SIMULATE_TRAFFIC` and `RESET_TRAFFIC_ALERT`
+are also represented; their production availability is unverified. Simulation
+seconds must be nonnegative and may only accompany `SIMULATE_TRAFFIC`.
+
+The new sync action tags are `profileRemoveAvatarAction=45`,
+`whenToLeavePlanChangeAction=46`, and `passportSharedAction=47`.
+`remove_profile_avatar` requires destructive confirmation.
+`record_passport_shared(year, occurred_at)` records an explicitly requested event;
+it does not create or send an image, and is never called automatically.
+All writes return the existing compact acknowledgment and require readback.
+
+`GET /v1/static_assets` recognizes `USER_STATS_DISTRIBUTIONS=7`. Its
+`downloadUrl` identifies a separate asset; this server returns the listing and
+does not download arbitrary asset/CDN URLs or forward credentials to them. The
+six `CLIUserStatsDistributionsProto` definitions describe its yearly global,
+airline and airport percentile thresholds and can be inspected with `get_schema`.
+Python callers can decode already-downloaded protobuf bytes with
+`proto.decode('CLIUserStatsDistributionsProto', data)`.
+Airport-bearing responses also decode the new `RemoteAirport.isSchengen` field.
+
+The 4.11.1-to-4.12 comparison found no confirmed removed HTTP route. All previous
+API definitions and existing tags remain. Three new debug response definitions
+are discoverable as schemas, with no invented HTTP routes. The new app's local
+past-flight search, friend ordering and Passport rendering are not separate
+Flighty API calls and are not reimplemented by this protocol update.
 
 ## Account linking and TripIt
 

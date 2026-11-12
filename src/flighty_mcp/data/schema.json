@@ -8,7 +8,8 @@
       "MAPS": 3,
       "CALENDAR_PARSING_CONFIG": 4,
       "APP_ABOUT": 5,
-      "PASSPORTS": 6
+      "PASSPORTS": 6,
+      "USER_STATS_DISTRIBUTIONS": 7
     }
   },
   "GetStaticAssetsResponse": {
@@ -1612,6 +1613,14 @@
         "repeated": false,
         "optional": true,
         "type": "string"
+      },
+      {
+        "number": 13,
+        "name": "capabilities",
+        "json_name": "capabilities",
+        "repeated": false,
+        "optional": true,
+        "type": "ClientCapabilitiesProto"
       }
     ]
   },
@@ -2205,6 +2214,33 @@
         "repeated": false,
         "optional": false,
         "type": "SyncChangeRequestProto.ConnectionStepsFeedbackAction"
+      },
+      {
+        "number": 45,
+        "name": "profileRemoveAvatarAction",
+        "json_name": "profileRemoveAvatarAction",
+        "repeated": false,
+        "optional": false,
+        "type": "SyncChangeRequestProto.ProfileRemoveAvatarAction",
+        "oneof": "change"
+      },
+      {
+        "number": 46,
+        "name": "whenToLeavePlanChangeAction",
+        "json_name": "whenToLeavePlanChangeAction",
+        "repeated": false,
+        "optional": false,
+        "type": "SyncChangeRequestProto.WhenToLeavePlanChangeAction",
+        "oneof": "change"
+      },
+      {
+        "number": 47,
+        "name": "passportSharedAction",
+        "json_name": "passportSharedAction",
+        "repeated": false,
+        "optional": false,
+        "type": "SyncChangeRequestProto.PassportSharedAction",
+        "oneof": "change"
       }
     ]
   },
@@ -2692,6 +2728,14 @@
         "repeated": false,
         "optional": true,
         "type": "string"
+      },
+      {
+        "number": 12,
+        "name": "capabilities",
+        "json_name": "capabilities",
+        "repeated": false,
+        "optional": true,
+        "type": "ClientCapabilitiesProto"
       }
     ]
   },
@@ -6054,6 +6098,14 @@
         "repeated": false,
         "optional": true,
         "type": "string"
+      },
+      {
+        "number": 17,
+        "name": "isSchengen",
+        "json_name": "isSchengen",
+        "repeated": false,
+        "optional": false,
+        "type": "bool"
       }
     ]
   },
@@ -10231,6 +10283,15 @@
         "repeated": false,
         "optional": false,
         "type": "RemoteUserDetails"
+      },
+      {
+        "number": 27,
+        "name": "remoteWhenToLeavePlan",
+        "json_name": "remoteWhenToLeavePlan",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan",
+        "oneof": "data"
       }
     ]
   },
@@ -10782,5 +10843,1286 @@
   "FlightyWebsocketsServerMessage.RequestSync": {
     "kind": "message",
     "fields": []
+  },
+  "SyncChangeRequestProto.PassportSharedAction": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "year",
+        "json_name": "year",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      },
+      {
+        "number": 2,
+        "name": "occurredAt",
+        "json_name": "occurredAt",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      }
+    ]
+  },
+  "SyncChangeRequestProto.WhenToLeavePlanChangeAction": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "planId",
+        "json_name": "planId",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 2,
+        "name": "flight",
+        "json_name": "flight",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.FlightRef"
+      },
+      {
+        "number": 3,
+        "name": "operation",
+        "json_name": "operation",
+        "repeated": false,
+        "optional": false,
+        "type": "SyncChangeRequestProto.WhenToLeavePlanChangeAction.Operation"
+      },
+      {
+        "number": 4,
+        "name": "inputs",
+        "json_name": "inputs",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Inputs"
+      },
+      {
+        "number": 6,
+        "name": "simulatedTrafficSeconds",
+        "json_name": "simulatedTrafficSeconds",
+        "repeated": false,
+        "optional": true,
+        "type": "int64"
+      }
+    ]
+  },
+  "SyncChangeRequestProto.WhenToLeavePlanChangeAction.Operation": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN": 0,
+      "SAVE": 1,
+      "DISABLE": 2,
+      "DELETE": 3,
+      "REQUEST_REFRESH": 5,
+      "SIMULATE_TRAFFIC": 6,
+      "RESET_TRAFFIC_ALERT": 7
+    }
+  },
+  "SyncChangeRequestProto.ProfileRemoveAvatarAction": {
+    "kind": "message",
+    "fields": []
+  },
+  "DebugFlightListsResponseProto": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "lists",
+        "json_name": "lists",
+        "repeated": true,
+        "optional": false,
+        "type": "DebugFlightListProto"
+      }
+    ]
+  },
+  "DebugFlightListProto": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "id",
+        "json_name": "id",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 2,
+        "name": "name",
+        "json_name": "name",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 3,
+        "name": "description",
+        "json_name": "description",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 4,
+        "name": "flightCount",
+        "json_name": "flightCount",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      },
+      {
+        "number": 5,
+        "name": "firstYear",
+        "json_name": "firstYear",
+        "repeated": false,
+        "optional": true,
+        "type": "int32"
+      },
+      {
+        "number": 6,
+        "name": "lastYear",
+        "json_name": "lastYear",
+        "repeated": false,
+        "optional": true,
+        "type": "int32"
+      },
+      {
+        "number": 7,
+        "name": "isTeamMember",
+        "json_name": "isTeamMember",
+        "repeated": false,
+        "optional": false,
+        "type": "bool"
+      }
+    ]
+  },
+  "DebugSeedFlightsResponseProto": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "deletedFlights",
+        "json_name": "deletedFlights",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      },
+      {
+        "number": 2,
+        "name": "trackedFlights",
+        "json_name": "trackedFlights",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      },
+      {
+        "number": 3,
+        "name": "manualFlights",
+        "json_name": "manualFlights",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      },
+      {
+        "number": 4,
+        "name": "tickets",
+        "json_name": "tickets",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      },
+      {
+        "number": 5,
+        "name": "failed",
+        "json_name": "failed",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      }
+    ]
+  },
+  "RemotePublicHolidays": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "countryCode",
+        "json_name": "countryCode",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 2,
+        "name": "timeZone",
+        "json_name": "timeZone",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 3,
+        "name": "fromDate",
+        "json_name": "fromDate",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 4,
+        "name": "toDate",
+        "json_name": "toDate",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 5,
+        "name": "holidays",
+        "json_name": "holidays",
+        "repeated": true,
+        "optional": false,
+        "type": "RemotePublicHoliday"
+      }
+    ]
+  },
+  "RemotePublicHoliday": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "date",
+        "json_name": "date",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 2,
+        "name": "name",
+        "json_name": "name",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 3,
+        "name": "observed",
+        "json_name": "observed",
+        "repeated": false,
+        "optional": false,
+        "type": "bool"
+      },
+      {
+        "number": 4,
+        "name": "actualDate",
+        "json_name": "actualDate",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "planId",
+        "json_name": "planId",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 2,
+        "name": "userId",
+        "json_name": "userId",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 3,
+        "name": "flight",
+        "json_name": "flight",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.FlightRef"
+      },
+      {
+        "number": 7,
+        "name": "lifecycle",
+        "json_name": "lifecycle",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.Lifecycle"
+      },
+      {
+        "number": 8,
+        "name": "inputs",
+        "json_name": "inputs",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Inputs"
+      },
+      {
+        "number": 9,
+        "name": "derived",
+        "json_name": "derived",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.DerivedState"
+      },
+      {
+        "number": 10,
+        "name": "created",
+        "json_name": "created",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 11,
+        "name": "updated",
+        "json_name": "updated",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 12,
+        "name": "deleted",
+        "json_name": "deleted",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.Lifecycle": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN": 0,
+      "ACTIVE": 1,
+      "STOPPED": 3,
+      "EXPIRED": 4,
+      "DELETED": 5
+    }
+  },
+  "RemoteWhenToLeavePlan.FlightRef": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "kind",
+        "json_name": "kind",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.FlightRef.Kind"
+      },
+      {
+        "number": 2,
+        "name": "flightId",
+        "json_name": "flightId",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.FlightRef.Kind": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN": 0,
+      "ONLINE": 1
+    }
+  },
+  "RemoteWhenToLeavePlan.Place": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "latitude",
+        "json_name": "latitude",
+        "repeated": false,
+        "optional": true,
+        "type": "double"
+      },
+      {
+        "number": 2,
+        "name": "longitude",
+        "json_name": "longitude",
+        "repeated": false,
+        "optional": true,
+        "type": "double"
+      },
+      {
+        "number": 3,
+        "name": "label",
+        "json_name": "label",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 4,
+        "name": "timeZone",
+        "json_name": "timeZone",
+        "repeated": false,
+        "optional": true,
+        "type": "string"
+      },
+      {
+        "number": 5,
+        "name": "source",
+        "json_name": "source",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.Place.Source"
+      },
+      {
+        "number": 6,
+        "name": "quality",
+        "json_name": "quality",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.Place.Quality"
+      },
+      {
+        "number": 7,
+        "name": "providerPlaceId",
+        "json_name": "providerPlaceId",
+        "repeated": false,
+        "optional": true,
+        "type": "string"
+      },
+      {
+        "number": 8,
+        "name": "accuracyMeters",
+        "json_name": "accuracyMeters",
+        "repeated": false,
+        "optional": true,
+        "type": "int32"
+      },
+      {
+        "number": 9,
+        "name": "countryCode",
+        "json_name": "countryCode",
+        "repeated": false,
+        "optional": true,
+        "type": "string"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.Place.Source": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN": 0,
+      "SEARCH": 1,
+      "CURRENT_LOCATION": 2,
+      "MANUAL": 3,
+      "CALENDAR": 4
+    }
+  },
+  "RemoteWhenToLeavePlan.Place.Quality": {
+    "kind": "enum",
+    "values": {
+      "UNSPECIFIED_QUALITY": 0,
+      "UNKNOWN_DESTINATION": 1,
+      "AIRPORT_CENTER": 2,
+      "AIRPORT_PLACE": 3,
+      "TERMINAL_PLACE": 4,
+      "VERIFIED_ENTRANCE": 5
+    }
+  },
+  "RemoteWhenToLeavePlan.Allowance": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "mode",
+        "json_name": "mode",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.Allowance.Mode"
+      },
+      {
+        "number": 2,
+        "name": "totalSeconds",
+        "json_name": "totalSeconds",
+        "repeated": false,
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "number": 3,
+        "name": "items",
+        "json_name": "items",
+        "repeated": true,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.Allowance.Item"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.Allowance.Mode": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN": 0,
+      "TOTAL": 1,
+      "ITEMIZED": 2
+    }
+  },
+  "RemoteWhenToLeavePlan.Allowance.Item": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "activity",
+        "json_name": "activity",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.Allowance.Item.Activity"
+      },
+      {
+        "number": 2,
+        "name": "seconds",
+        "json_name": "seconds",
+        "repeated": false,
+        "optional": true,
+        "type": "int64"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.Allowance.Item.Activity": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN": 0,
+      "CHECK_IN": 1,
+      "SECURITY": 3,
+      "PASSPORT_CONTROL": 4,
+      "BOARDING": 6,
+      "OTHER": 7,
+      "LOUNGE": 8,
+      "PARKING": 9,
+      "RENTAL_RETURN": 10,
+      "SHUTTLE": 11
+    }
+  },
+  "RemoteWhenToLeavePlan.FlightContext": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "originalDeparture",
+        "json_name": "originalDeparture",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 2,
+        "name": "departureAirportId",
+        "json_name": "departureAirportId",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 3,
+        "name": "terminal",
+        "json_name": "terminal",
+        "repeated": false,
+        "optional": true,
+        "type": "string"
+      },
+      {
+        "number": 4,
+        "name": "airportTimeZone",
+        "json_name": "airportTimeZone",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.Estimate": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "surface",
+        "json_name": "surface",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.Estimate.Surface"
+      },
+      {
+        "number": 2,
+        "name": "intent",
+        "json_name": "intent",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.Estimate.Intent"
+      },
+      {
+        "number": 3,
+        "name": "origin",
+        "json_name": "origin",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Place"
+      },
+      {
+        "number": 4,
+        "name": "destination",
+        "json_name": "destination",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Place"
+      },
+      {
+        "number": 5,
+        "name": "requestedArrival",
+        "json_name": "requestedArrival",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 6,
+        "name": "requestedDeparture",
+        "json_name": "requestedDeparture",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 8,
+        "name": "checkedAt",
+        "json_name": "checkedAt",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 9,
+        "name": "durationSeconds",
+        "json_name": "durationSeconds",
+        "repeated": false,
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "number": 10,
+        "name": "staticDurationSeconds",
+        "json_name": "staticDurationSeconds",
+        "repeated": false,
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "number": 11,
+        "name": "distanceMeters",
+        "json_name": "distanceMeters",
+        "repeated": false,
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "number": 12,
+        "name": "returnedDeparture",
+        "json_name": "returnedDeparture",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 13,
+        "name": "returnedArrival",
+        "json_name": "returnedArrival",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 14,
+        "name": "inferredDeparture",
+        "json_name": "inferredDeparture",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 15,
+        "name": "trafficLevel",
+        "json_name": "trafficLevel",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Estimate.TrafficLevel"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.Estimate.Surface": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN": 0,
+      "APPLE_NATIVE_ETA": 1,
+      "APPLE_SERVER_ETA": 2
+    }
+  },
+  "RemoteWhenToLeavePlan.Estimate.Intent": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN_INTENT": 0,
+      "ARRIVE_BY": 1,
+      "DEPART_AT": 2
+    }
+  },
+  "RemoteWhenToLeavePlan.Estimate.TrafficLevel": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN_TRAFFIC_LEVEL": 0,
+      "LIGHT": 1,
+      "MODERATE": 2,
+      "HEAVY": 3
+    }
+  },
+  "RemoteWhenToLeavePlan.Inputs": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "travelMode",
+        "json_name": "travelMode",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.Inputs.TravelMode"
+      },
+      {
+        "number": 2,
+        "name": "origin",
+        "json_name": "origin",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Place"
+      },
+      {
+        "number": 3,
+        "name": "destination",
+        "json_name": "destination",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Place"
+      },
+      {
+        "number": 4,
+        "name": "manualDurationSeconds",
+        "json_name": "manualDurationSeconds",
+        "repeated": false,
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "number": 5,
+        "name": "allowance",
+        "json_name": "allowance",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Allowance"
+      },
+      {
+        "number": 6,
+        "name": "travelBufferSeconds",
+        "json_name": "travelBufferSeconds",
+        "repeated": false,
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "number": 7,
+        "name": "trafficUpdatesRequested",
+        "json_name": "trafficUpdatesRequested",
+        "repeated": false,
+        "optional": false,
+        "type": "bool"
+      },
+      {
+        "number": 8,
+        "name": "context",
+        "json_name": "context",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.FlightContext"
+      },
+      {
+        "number": 9,
+        "name": "nativePreview",
+        "json_name": "nativePreview",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Estimate"
+      },
+      {
+        "number": 10,
+        "name": "departureRemindersRequested",
+        "json_name": "departureRemindersRequested",
+        "repeated": false,
+        "optional": false,
+        "type": "bool"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.Inputs.TravelMode": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN": 0,
+      "NONE": 1,
+      "MANUAL": 2,
+      "AUTOMATIC_DRIVING": 3
+    }
+  },
+  "RemoteWhenToLeavePlan.Calculation": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "airportArrivalTarget",
+        "json_name": "airportArrivalTarget",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 2,
+        "name": "routeArrivalTarget",
+        "json_name": "routeArrivalTarget",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 3,
+        "name": "leaveAt",
+        "json_name": "leaveAt",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 4,
+        "name": "leaveProvenance",
+        "json_name": "leaveProvenance",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.Calculation.Provenance"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.Calculation.Provenance": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN": 0,
+      "MANUAL": 1,
+      "PROVIDER_RETURNED": 2,
+      "FLIGHTY_INFERRED": 3
+    }
+  },
+  "RemoteWhenToLeavePlan.Diagnostics": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "nextCheckAt",
+        "json_name": "nextCheckAt",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 2,
+        "name": "lastReason",
+        "json_name": "lastReason",
+        "repeated": false,
+        "optional": true,
+        "type": "string"
+      },
+      {
+        "number": 3,
+        "name": "trafficAlertAttempted",
+        "json_name": "trafficAlertAttempted",
+        "repeated": false,
+        "optional": false,
+        "type": "bool"
+      },
+      {
+        "number": 4,
+        "name": "simulatedTrafficSeconds",
+        "json_name": "simulatedTrafficSeconds",
+        "repeated": false,
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "number": 5,
+        "name": "simulationArmedAt",
+        "json_name": "simulationArmedAt",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 6,
+        "name": "simulationAppliedAt",
+        "json_name": "simulationAppliedAt",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.DerivedState": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "calculation",
+        "json_name": "calculation",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Calculation"
+      },
+      {
+        "number": 2,
+        "name": "verification",
+        "json_name": "verification",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.DerivedState.Verification"
+      },
+      {
+        "number": 3,
+        "name": "monitoring",
+        "json_name": "monitoring",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.DerivedState.Monitoring"
+      },
+      {
+        "number": 4,
+        "name": "freshness",
+        "json_name": "freshness",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.DerivedState.Freshness"
+      },
+      {
+        "number": 6,
+        "name": "failure",
+        "json_name": "failure",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.DerivedState.Failure"
+      },
+      {
+        "number": 7,
+        "name": "latestEstimate",
+        "json_name": "latestEstimate",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Estimate"
+      },
+      {
+        "number": 10,
+        "name": "acceptedLeaveAt",
+        "json_name": "acceptedLeaveAt",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 11,
+        "name": "trafficPattern",
+        "json_name": "trafficPattern",
+        "repeated": false,
+        "optional": false,
+        "type": "RemoteWhenToLeavePlan.DerivedState.TrafficPattern"
+      },
+      {
+        "number": 12,
+        "name": "displayedLeaveAt",
+        "json_name": "displayedLeaveAt",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 13,
+        "name": "trafficIncreaseSeconds",
+        "json_name": "trafficIncreaseSeconds",
+        "repeated": false,
+        "optional": true,
+        "type": "int64"
+      },
+      {
+        "number": 14,
+        "name": "diagnostics",
+        "json_name": "diagnostics",
+        "repeated": false,
+        "optional": true,
+        "type": "RemoteWhenToLeavePlan.Diagnostics"
+      }
+    ]
+  },
+  "RemoteWhenToLeavePlan.DerivedState.TrafficPattern": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN_TRAFFIC_PATTERN": 0,
+      "WITHIN_VARIATION": 1,
+      "PERSISTENTLY_HIGHER": 2,
+      "RISING": 3,
+      "RECOVERING": 4
+    }
+  },
+  "RemoteWhenToLeavePlan.DerivedState.Verification": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN_VERIFICATION": 0,
+      "NOT_REQUIRED": 1,
+      "PENDING": 2,
+      "VERIFIED": 3,
+      "FAILED": 4,
+      "OUTSIDE_HORIZON": 5
+    }
+  },
+  "RemoteWhenToLeavePlan.DerivedState.Monitoring": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN_MONITORING": 0,
+      "NOT_MONITORED": 1,
+      "VERIFYING": 2,
+      "MONITORED": 3,
+      "DEGRADED": 4,
+      "UNAVAILABLE": 5
+    }
+  },
+  "RemoteWhenToLeavePlan.DerivedState.Freshness": {
+    "kind": "enum",
+    "values": {
+      "UNKNOWN": 0,
+      "FRESH": 1,
+      "STALE": 2
+    }
+  },
+  "RemoteWhenToLeavePlan.DerivedState.Failure": {
+    "kind": "enum",
+    "values": {
+      "NO_FAILURE": 0,
+      "UNSUPPORTED": 1,
+      "NO_ROUTE": 2,
+      "INVALID_RESPONSE": 3,
+      "TIMEOUT": 4,
+      "AUTHENTICATION": 5,
+      "QUOTA": 6,
+      "UPSTREAM": 7
+    }
+  },
+  "ClientCapabilitiesProto": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "generations",
+        "json_name": "generations",
+        "repeated": true,
+        "optional": false,
+        "type": "map",
+        "value_type": "uint32"
+      },
+      {
+        "number": 2,
+        "name": "features",
+        "json_name": "features",
+        "repeated": true,
+        "optional": false,
+        "type": "ClientCapabilitiesProto.Feature"
+      }
+    ]
+  },
+  "ClientCapabilitiesProto.Feature": {
+    "kind": "enum",
+    "values": {
+      "FEATURE_UNSPECIFIED": 0,
+      "NON_ACTUAL_GATES": 1,
+      "FLIGHT_CONTENT_IDS_ON_SYNC": 2,
+      "WHEN_TO_LEAVE": 3
+    }
+  },
+  "CLIUserStatsDistributionsProto": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "schemaVersion",
+        "json_name": "schemaVersion",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      },
+      {
+        "number": 2,
+        "name": "calculationVersion",
+        "json_name": "calculationVersion",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      },
+      {
+        "number": 3,
+        "name": "year",
+        "json_name": "year",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      },
+      {
+        "number": 4,
+        "name": "generatedAt",
+        "json_name": "generatedAt",
+        "repeated": false,
+        "optional": true,
+        "type": "google.protobuf.Timestamp"
+      },
+      {
+        "number": 10,
+        "name": "thresholds",
+        "json_name": "thresholds",
+        "repeated": true,
+        "optional": false,
+        "type": "CLIUserStatsDistributionsProto.MetricThresholds"
+      },
+      {
+        "number": 11,
+        "name": "airlineThresholds",
+        "json_name": "airlineThresholds",
+        "repeated": true,
+        "optional": false,
+        "type": "CLIUserStatsDistributionsProto.Airline"
+      },
+      {
+        "number": 12,
+        "name": "airportThresholds",
+        "json_name": "airportThresholds",
+        "repeated": true,
+        "optional": false,
+        "type": "CLIUserStatsDistributionsProto.Airport"
+      }
+    ]
+  },
+  "CLIUserStatsDistributionsProto.Metric": {
+    "kind": "enum",
+    "values": {
+      "FLIGHT_COUNT": 0,
+      "TOTAL_DISTANCE_METERS": 1,
+      "TOTAL_FLIGHT_DURATION_SECONDS": 2,
+      "SHORTEST_FLIGHT_DISTANCE_METERS": 3,
+      "LONGEST_FLIGHT_DISTANCE_METERS": 4,
+      "DISTINCT_AIRPORT_COUNT": 5,
+      "DISTINCT_COUNTRY_COUNT": 6,
+      "NEW_AIRPORT_COUNT": 7,
+      "NEW_COUNTRY_COUNT": 8,
+      "REPEAT_AIRCRAFT_FLIGHT_COUNT": 9,
+      "MOST_FLOWN_TAIL_FLIGHT_COUNT": 10,
+      "PRIOR_YEAR_AIRCRAFT_REUNION_FLIGHT_COUNT": 11,
+      "DISTINCT_AIRLINE_COUNT": 12
+    }
+  },
+  "CLIUserStatsDistributionsProto.Threshold": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "topPercent",
+        "json_name": "topPercent",
+        "repeated": false,
+        "optional": false,
+        "type": "int32"
+      },
+      {
+        "number": 2,
+        "name": "value",
+        "json_name": "value",
+        "repeated": false,
+        "optional": false,
+        "type": "int64"
+      }
+    ]
+  },
+  "CLIUserStatsDistributionsProto.MetricThresholds": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "metric",
+        "json_name": "metric",
+        "repeated": false,
+        "optional": false,
+        "type": "CLIUserStatsDistributionsProto.Metric"
+      },
+      {
+        "number": 2,
+        "name": "thresholds",
+        "json_name": "thresholds",
+        "repeated": true,
+        "optional": false,
+        "type": "CLIUserStatsDistributionsProto.Threshold"
+      }
+    ]
+  },
+  "CLIUserStatsDistributionsProto.Airline": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "airlineId",
+        "json_name": "airlineId",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 2,
+        "name": "thresholds",
+        "json_name": "thresholds",
+        "repeated": true,
+        "optional": false,
+        "type": "CLIUserStatsDistributionsProto.MetricThresholds"
+      }
+    ]
+  },
+  "CLIUserStatsDistributionsProto.Airport": {
+    "kind": "message",
+    "fields": [
+      {
+        "number": 1,
+        "name": "airportId",
+        "json_name": "airportId",
+        "repeated": false,
+        "optional": false,
+        "type": "string"
+      },
+      {
+        "number": 2,
+        "name": "flightCount",
+        "json_name": "flightCount",
+        "repeated": false,
+        "optional": true,
+        "type": "CLIUserStatsDistributionsProto.MetricThresholds"
+      }
+    ]
   }
 }

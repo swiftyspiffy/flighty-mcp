@@ -12,7 +12,9 @@ API_BASE = "https://api.flightyapp.com"
 WEBSOCKET_URL = "wss://websockets.flightyapp.com/ws"
 MIN_SYNC_INTERVAL = 60.0
 
-USER_AGENT = "Flighty 4.11.1 (4818) com.flightyapp.flighty"
+APP_CONTRACT = "4.12.0 (4875)"
+SCHEMA_VERSION = "4.12.0"
+USER_AGENT = f"Flighty {APP_CONTRACT} com.flightyapp.flighty"
 
 
 def secret_env(name: str) -> str:

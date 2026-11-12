@@ -10,6 +10,7 @@ import respx
 from mcp.server.mcpserver.exceptions import ToolError
 
 from flighty_mcp import proto
+from flighty_mcp.capabilities import client_capabilities
 from flighty_mcp.client import FlightyClient
 from flighty_mcp.config import API_BASE
 from flighty_mcp.endpoints import ENDPOINTS
@@ -69,7 +70,12 @@ async def test_named_generic_endpoint_route_method_headers_and_body_mock_only(
     request = route.calls[0].request
     assert request.method == endpoint.method
     if endpoint.request:
-        assert request.content == proto.encode(endpoint.request, payload)
+        expected = (
+            {"capabilities": client_capabilities(), **payload}
+            if operation == "register_device"
+            else payload
+        )
+        assert request.content == proto.encode(endpoint.request, expected)
     elif endpoint.json_body:
         assert json.loads(request.content) == payload
     else:

@@ -19,7 +19,7 @@ async def test_stdio_roundtrip_discovery_schema_and_resource() -> None:
         initialized = await session.initialize()
         assert initialized.server_info.name == "flighty"
         tools = await session.list_tools()
-        assert len(tools.tools) == 48
+        assert len(tools.tools) == 55
         result = await session.call_tool("get_schema", {"name": "SyncRequestProto"})
         assert not result.is_error
         assert result.structured_content["name"] == "SyncRequestProto"

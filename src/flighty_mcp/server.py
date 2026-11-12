@@ -16,7 +16,7 @@ from mcp.server.mcpserver import Context, MCPServer
 from mcp_types import ToolAnnotations
 
 from . import __version__, proto
-from .client import FlightyClient, token_subject, uuid_text, validate_token
+from .client import FlightyClient, token_subject, utc_now, uuid_text, validate_token
 from .config import WEBSOCKET_URL, secret_env
 from .endpoints import ENDPOINTS, catalog
 from .errors import FlightyError
@@ -301,16 +301,130 @@ def create_server(client: FlightyClient | None = None) -> MCPServer:
     async def apply_changes(
         changes: list[dict[str, Any]], confirm_destructive: bool = False, ctx: Context | None = None
     ) -> dict[str, Any]:
-        """Advanced sync editor supporting all 43 supported actions, with strict protobuf validation.
+        """Advanced sync editor supporting all 46 supported actions, with strict protobuf validation.
 
         Each object has exactly one action, plus an optional RFC3339 timestamp (generated
         if omitted). Inspect get_schema('SyncChangeRequestProto') and the action's schema
         first. Requires writes enabled. Delete/remove/revoke/bulk actions additionally
-        require confirm_destructive=true. No automatic retries or implicit empty changes.
+        require confirm_destructive=true, including a nested plan DELETE operation.
+        No automatic retries or implicit empty changes.
         Omitted fields may clear values; provide a complete action when semantics are unclear.
         """
         return await api.apply_changes(
             resolve_token(ctx), changes, confirm_destructive=confirm_destructive
+        )
+
+    @mcp.tool(annotations=READ)
+    async def list_when_to_leave_plans(
+        flight_id: str | None = None,
+        limit: int = 50,
+        offset: int = 0,
+        refresh: bool = False,
+        ctx: Context | None = None,
+    ) -> dict[str, Any]:
+        """Read this account's saved departure plans through cached, bodyless account sync.
+
+        Excludes deletion markers and other owners. Returns planId, flight, inputs,
+        derived leave/traffic/monitoring state and lifecycle. Stopped/expired plans
+        remain visible. Optionally filter by flight UUID. limit 1..200.
+        """
+        return await service.list_when_to_leave_plans(
+            resolve_token(ctx), flight_id=flight_id, limit=limit, offset=offset, refresh=refresh
+        )
+
+    @mcp.tool(annotations=WRITE)
+    async def save_when_to_leave_plan(
+        plan_id: str,
+        flight_id: str,
+        inputs: dict[str, Any],
+        ctx: Context | None = None,
+    ) -> dict[str, Any]:
+        """Save complete When to Leave inputs for a plan and ONLINE flight. Requires writes enabled.
+
+        Use the existing planId when editing. Inspect RemoteWhenToLeavePlan.Inputs
+        with get_schema for travel mode, origin/destination, airport allowance,
+        buffers, traffic updates and reminders. Sends SAVE through account sync;
+        this is a complete input replacement, not a patch. Creation/entitlements
+        are not live-validated. Read the plan back after acknowledgment.
+        """
+        return await api.apply_changes(
+            resolve_token(ctx),
+            [
+                {
+                    "whenToLeavePlanChangeAction": {
+                        "planId": plan_id,
+                        "flight": {"kind": "ONLINE", "flightId": uuid_text(flight_id)},
+                        "operation": "SAVE",
+                        "inputs": inputs,
+                    }
+                }
+            ],
+        )
+
+    @mcp.tool(annotations=DESTRUCTIVE)
+    async def change_when_to_leave_plan(
+        plan_id: str,
+        operation: Literal[
+            "DISABLE", "DELETE", "REQUEST_REFRESH", "SIMULATE_TRAFFIC", "RESET_TRAFFIC_ALERT"
+        ],
+        flight_id: str | None = None,
+        simulated_traffic_seconds: int | None = None,
+        confirm_destructive: bool = False,
+        ctx: Context | None = None,
+    ) -> dict[str, Any]:
+        """Send a departure-plan command through account sync. Requires writes enabled.
+
+        Discover the planId with list_when_to_leave_plans. DELETE additionally
+        requires confirm_destructive=true. DISABLE stops the plan; REQUEST_REFRESH
+        asks the server to refresh it. SIMULATE_TRAFFIC/RESET_TRAFFIC_ALERT are
+        compiled diagnostic commands with unverified production availability.
+        Never use them for ordinary refreshes. Acknowledgments need readback.
+        """
+        body: dict[str, Any] = {"planId": plan_id, "operation": operation}
+        if flight_id is not None:
+            body["flight"] = {"kind": "ONLINE", "flightId": uuid_text(flight_id)}
+        if simulated_traffic_seconds is not None:
+            body["simulatedTrafficSeconds"] = simulated_traffic_seconds
+        return await api.apply_changes(
+            resolve_token(ctx),
+            [{"whenToLeavePlanChangeAction": body}],
+            confirm_destructive=confirm_destructive,
+        )
+
+    @mcp.tool(annotations=DESTRUCTIVE)
+    async def remove_profile_avatar(
+        confirm_destructive: bool = False, ctx: Context | None = None
+    ) -> dict[str, Any]:
+        """Remove this account's profile photo. Requires writes and confirm_destructive=true.
+
+        Uses the dedicated 4.12 sync action. Does not upload a blank image.
+        """
+        return await api.apply_changes(
+            resolve_token(ctx),
+            [{"profileRemoveAvatarAction": {}}],
+            confirm_destructive=confirm_destructive,
+        )
+
+    @mcp.tool(annotations=WRITE)
+    async def record_passport_shared(
+        year: int, occurred_at: str | None = None, ctx: Context | None = None
+    ) -> dict[str, Any]:
+        """Record an explicitly requested Passport share event for a year, using account sync.
+
+        Requires writes enabled. occurred_at is RFC3339; defaults to now. This
+        does not render an image or send it anywhere. Never submit automatically
+        when reading statistics or preparing an image.
+        """
+        return await api.apply_changes(
+            resolve_token(ctx),
+            [
+                {
+                    "passportSharedAction": {
+                        "year": year,
+                        "occurredAt": occurred_at if occurred_at is not None else utc_now(),
+                    }
+                }
+            ],
         )
 
     @mcp.tool(annotations=DESTRUCTIVE)

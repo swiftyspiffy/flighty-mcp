@@ -150,7 +150,7 @@ def test_every_contract_builds_and_all_references_resolve() -> None:
     for name, definition in proto.SCHEMA.items():
         if definition["kind"] == "message":
             assert proto.decode(name, proto.encode(name, {})) == {}
-    assert len(proto.SCHEMA) == 281
+    assert len(proto.SCHEMA) == 325
 
 
 def test_schema_description_and_unknown_name_search() -> None:

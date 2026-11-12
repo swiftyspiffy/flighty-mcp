@@ -9,6 +9,7 @@ import pytest
 import respx
 
 from flighty_mcp import proto
+from flighty_mcp.capabilities import capability_header, client_capabilities
 from flighty_mcp.client import FlightyClient
 from flighty_mcp.config import API_BASE, Settings
 from flighty_mcp.endpoints import ENDPOINTS
@@ -36,7 +37,7 @@ async def test_full_sync_sends_no_body_and_matches_app_headers(client: FlightyCl
     assert request.content == b""
     assert request.headers["Authorization"] == "Bearer " + TOKEN
     assert request.headers["X-Flighty-Build-Token"] == "synthetic-build-credential"
-    assert request.headers["User-Agent"] == "Flighty 4.11.1 (4818) com.flightyapp.flighty"
+    assert request.headers["User-Agent"] == "Flighty 4.12.0 (4875) com.flightyapp.flighty"
     assert request.headers["X-Flighty-Locale"] == "en_US"
     assert request.headers["Accept"] == request.headers["Content-Type"] == "application/x-protobuf"
     assert request.headers["Accept-Encoding"] == "gzip"
@@ -228,18 +229,23 @@ ACTIONS = [
 
 
 @pytest.mark.parametrize("action", [f["json_name"] for f in ACTIONS])
-async def test_all_43_change_actions_encode_on_correct_tag(
+async def test_all_46_change_actions_encode_on_correct_tag(
     writer: FlightyClient, action: str
 ) -> None:
     route = respx.post(SYNC).respond(
         200, content=b"", headers={"Content-Type": "application/x-protobuf"}
     )
+    body = {
+        "whenToLeavePlanChangeAction": {"planId": "synthetic-plan", "operation": "REQUEST_REFRESH"},
+        "passportSharedAction": {"year": 2099},
+        "deviceChangeAction": {"capabilities": client_capabilities()},
+    }.get(action, {})
     await writer.apply_changes(
-        TOKEN, [{"timestamp": "2000-01-01T00:00:00Z", action: {}}], confirm_destructive=True
+        TOKEN, [{"timestamp": "2000-01-01T00:00:00Z", action: body}], confirm_destructive=True
     )
     wire = route.calls[0].request.content
     decoded = proto.decode("SyncRequestProto", wire)
-    assert decoded["changes"][0][action] == {}
+    assert decoded["changes"][0][action] == body
     number = next(f["number"] for f in ACTIONS if f["json_name"] == action)
 
     def varint(value: int) -> bytes:
@@ -249,8 +255,10 @@ async def test_all_43_change_actions_encode_on_correct_tag(
             value >>= 7
         return bytes(result + bytes([value]))
 
-    assert wire.endswith(varint(number * 8 + 2) + b"\x00")
-    assert len(ACTIONS) == 43
+    typename = next(f["type"] for f in ACTIONS if f["json_name"] == action)
+    encoded_body = proto.encode(typename, body)
+    assert wire.endswith(varint(number * 8 + 2) + varint(len(encoded_body)) + encoded_body)
+    assert len(ACTIONS) == 46
 
 
 @pytest.mark.parametrize(
@@ -333,7 +341,10 @@ async def test_proto_mutation_envelopes_mock_only(
     url = API_BASE + endpoint.path.format(**path)
     route = respx.request(endpoint.method, url).respond(200)
     await writer.request(operation, TOKEN, path=path, payload=body)
-    assert route.calls[0].request.content == proto.encode(endpoint.request, body)
+    expected = (
+        {"capabilities": client_capabilities(), **body} if operation == "register_device" else body
+    )
+    assert route.calls[0].request.content == proto.encode(endpoint.request, expected)
     assert route.calls[0].request.headers["Content-Type"] == "application/x-protobuf"
 
 
@@ -386,8 +397,9 @@ async def test_explicit_app_headers_and_request_timeout() -> None:
         "accept": "application/x-protobuf",
         "content-type": "application/x-protobuf",
         "accept-encoding": "gzip",
-        "user-agent": "Flighty 4.11.1 (4818) com.flightyapp.flighty",
+        "user-agent": "Flighty 4.12.0 (4875) com.flightyapp.flighty",
         "x-flighty-locale": "en_GB",
+        "x-flighty-client-capabilities": capability_header(),
         "device": FLIGHT,
     }
     assert request.extensions["timeout"] == dict.fromkeys(["connect", "read", "write", "pool"], 60)

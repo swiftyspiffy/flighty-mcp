@@ -35,7 +35,8 @@ default. Account deletion is disabled.**
 | 🔍 | Search flights, airports, airlines and aircraft |
 | 📡 | Check flight details, airport boards, status and radar data |
 | 📝 | Manage tracked flights, notes, seats, bookings and manual entries |
-| 🧩 | 48 tools for flight tracking and account features |
+| ⏱️ | Preview departure travel estimates and read/manage When to Leave plans |
+| 🧩 | 55 tools with Flighty 4.12 API contracts |
 | 🔐 | Your Flighty account token stays in your own setup |
 | 🐳 | Ready-to-run Docker image for Intel/AMD and Apple Silicon |
 
@@ -201,12 +202,19 @@ and transport flags. Keep credentials out of Git and Docker build arguments.
 | `get_schema`, `get_endpoint_catalog` | Explore supported routes and protobuf fields |
 | `subscribe_flight`, `delete_flight`, `set_flight_archived`, `set_flight_mine` | Track, remove and organize flights |
 | `update_ticket`, `set_flight_note`, `upsert_manual_flight` | Edit bookings, notes and manual flights |
-| `apply_changes` | Advanced access to all 43 sync actions |
+| `get_when_to_leave_holidays`, `estimate_when_to_leave` | Preview departure holidays and travel estimates |
+| `list_when_to_leave_plans`, `save_when_to_leave_plan`, `change_when_to_leave_plan` | Read and manage saved departure plans |
+| `remove_profile_avatar`, `record_passport_shared` | Remove a photo or explicitly record a Passport share |
+| `apply_changes` | Advanced access to all 46 sync actions |
 | `wait_for_sync` | Wait for an update notification |
 
 Additional tools cover airport boards, radar, imports/exports, sharing and friends.
 Browse the [full endpoint list](docs/endpoints.md), [sync actions](docs/sync-actions.md)
 and [API contracts](docs/api.md).
+
+The 4.12 planner reads, driving preview and manual-plan lifecycle passed scoped
+live checks. Access on other accounts and entitlement requirements remain unverified. Plan deletion and avatar removal require explicit
+destructive confirmation. See the [4.12 contract details](docs/api.md#flighty-412-departure-plans-and-passport-additions).
 
 Resources: `flighty://flights/{when}`, `flighty://account/{kind}` and
 `flighty://schema/{name}`. Account resources return up to 200 records; tools support pagination.

@@ -42,7 +42,7 @@ async def test_discovery_exposes_all_routes_without_network(client: FlightyClien
     tools = await server.list_tools()
     names = {tool.name for tool in tools}
     assert set(ENDPOINTS) <= names
-    assert len(names) == 48
+    assert len(names) == 55
     for tool in tools:
         assert "ctx" not in tool.input_schema.get("properties", {})
         if tool.name in ENDPOINTS:

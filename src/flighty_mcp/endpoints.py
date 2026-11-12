@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
 
+from .config import APP_CONTRACT
+
 
 @dataclass(frozen=True)
 class Endpoint:
@@ -92,6 +94,21 @@ ENDPOINTS = {
     "get_static_assets": Endpoint(
         "GET", "/v1/static_assets", True, response="GetStaticAssetsResponse"
     ),
+    "get_when_to_leave_holidays": Endpoint(
+        "GET",
+        "/v1/when-to-leave/online/{flight_id}/holidays",
+        True,
+        response="RemotePublicHolidays",
+        notes="Flighty 4.12 departure holiday lookup; availability is not live-validated.",
+    ),
+    "estimate_when_to_leave": Endpoint(
+        "POST",
+        "/v1/when-to-leave/online/{flight_id}/estimate",
+        True,
+        "RemoteWhenToLeavePlan.Inputs",
+        "RemoteWhenToLeavePlan.Estimate",
+        notes="Preview only; does not save a plan or enable reminders. Availability is not live-validated.",
+    ),
     "get_radar_layers": Endpoint(
         "GET", "/v1/radar/layers", True, response="GetRadarLayersResponseProto"
     ),
@@ -150,7 +167,7 @@ ENDPOINTS = {
 
 def catalog() -> dict[str, Any]:
     return {
-        "app_contract": "4.11.1 (4818)",
+        "app_contract": APP_CONTRACT,
         "operations": {name: asdict(endpoint) for name, endpoint in ENDPOINTS.items()},
         "browser_only": {
             "tripit": {

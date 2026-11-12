@@ -22,6 +22,8 @@
 | `import_calendar` | `POST /v1/sync/calendar` | Write | `CalendarImportRequestProto` | `acknowledgment/JSON` |
 | `lookup_aircraft` | `POST /v1/autocomplete/aircraftTypeFromTail` | Read | `AutocompleteAircraftTypeRequestProto` | `AutocompleteAircraftTypeResponseProto` |
 | `get_static_assets` | `GET /v1/static_assets` | Read | `none` | `GetStaticAssetsResponse` |
+| `get_when_to_leave_holidays` | `GET /v1/when-to-leave/online/{flight_id}/holidays` | Read | `none` | `RemotePublicHolidays` |
+| `estimate_when_to_leave` | `POST /v1/when-to-leave/online/{flight_id}/estimate` | Read | `RemoteWhenToLeavePlan.Inputs` | `RemoteWhenToLeavePlan.Estimate` |
 | `get_radar_layers` | `GET /v1/radar/layers` | Read | `none` | `GetRadarLayersResponseProto` |
 | `get_airport_status` | `GET /v1/airport-status/{airport_id}` | Read | `none` | `RemoteAirportCardResponseProto` |
 | `get_airport_mini_status` | `GET /v1/airport-status/{airport_id}/mini` | Read | `none` | `RemoteMiniAirportStatus` |

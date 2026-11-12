@@ -43,3 +43,6 @@
 | `connectedFriendRelationshipPermissionTierChangeAction` | 42 | `SyncChangeRequestProto.ConnectedFriendRelationshipPermissionTierChangeAction` |
 | `userDetailsUpdateAction` | 43 | `SyncChangeRequestProto.UserDetailsUpdateAction` |
 | `connectionStepsFeedbackAction` | 44 | `SyncChangeRequestProto.ConnectionStepsFeedbackAction` |
+| `profileRemoveAvatarAction` | 45 | `SyncChangeRequestProto.ProfileRemoveAvatarAction` |
+| `whenToLeavePlanChangeAction` | 46 | `SyncChangeRequestProto.WhenToLeavePlanChangeAction` |
+| `passportSharedAction` | 47 | `SyncChangeRequestProto.PassportSharedAction` |

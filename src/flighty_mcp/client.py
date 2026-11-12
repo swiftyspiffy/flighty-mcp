@@ -21,7 +21,8 @@ from weakref import WeakValueDictionary
 import httpx
 
 from . import proto
-from .config import API_BASE, MIN_SYNC_INTERVAL, Settings
+from .capabilities import capability_header, client_capabilities
+from .config import API_BASE, MIN_SYNC_INTERVAL, SCHEMA_VERSION, Settings
 from .endpoints import ENDPOINTS
 from .errors import FlightyError, WritesDisabled
 
@@ -48,7 +49,7 @@ def token_subject(token: str) -> str:
 def uuid_text(value: str) -> str:
     try:
         return str(UUID(value))
-    except (ValueError, AttributeError):
+    except (ValueError, AttributeError, TypeError):
         raise FlightyError("Expected a UUID identifier.") from None
 
 
@@ -66,6 +67,49 @@ def timestamp(value: str) -> datetime:
         raise FlightyError("Expected an RFC3339 timestamp with a timezone.") from None
 
 
+def validate_plan_change(body: dict[str, Any]) -> str:
+    """Validate nested commands before the generic sync mutation path."""
+    plan_id = body.get("planId")
+    if (
+        not isinstance(plan_id, str)
+        or not plan_id.strip()
+        or len(plan_id) > 512
+        or any(ord(c) < 32 for c in plan_id)
+    ):
+        raise FlightyError("Supply a nonempty planId of at most 512 characters.")
+    values = proto.SCHEMA["SyncChangeRequestProto.WhenToLeavePlanChangeAction.Operation"]["values"]
+    operation = body.get("operation")
+    if type(operation) is int:
+        operation = next((name for name, value in values.items() if value == operation), None)
+    if not isinstance(operation, str) or operation not in values or operation == "UNKNOWN":
+        raise FlightyError("Supply a supported When to Leave operation; UNKNOWN is not a command.")
+    flight = body.get("flight")
+    if flight is not None:
+        if (
+            not isinstance(flight, dict)
+            or type(flight.get("kind")) not in {str, int}
+            or flight.get("kind") not in ("ONLINE", 1)
+        ):
+            raise FlightyError("When to Leave flight references must have kind ONLINE.")
+        uuid_text(flight.get("flightId", ""))
+    if operation == "SAVE" and (
+        flight is None or not isinstance(body.get("inputs"), dict) or not body["inputs"]
+    ):
+        raise FlightyError("Saving a plan requires an ONLINE flight and complete, nonempty inputs.")
+    if "simulatedTrafficSeconds" in body and body["simulatedTrafficSeconds"] is not None:
+        seconds = body["simulatedTrafficSeconds"]
+        if operation != "SIMULATE_TRAFFIC" or (
+            type(seconds) is not int
+            and not (isinstance(seconds, str) and len(seconds) <= 20 and seconds.isdecimal())
+        ):
+            raise FlightyError(
+                "simulatedTrafficSeconds requires SIMULATE_TRAFFIC and nonnegative seconds."
+            )
+        if int(seconds) < 0:
+            raise FlightyError("simulatedTrafficSeconds must be nonnegative.")
+    return operation
+
+
 @dataclass
 class Snapshot:
     account_id: str
@@ -78,7 +122,15 @@ class Snapshot:
 
     def items(self, kind: str, *, include_deleted: bool = False) -> list[dict[str, Any]]:
         records = self.records.get(kind, [])
-        return [item for item in records if include_deleted or not item.get("deleted")]
+        return [
+            item
+            for item in records
+            if include_deleted
+            or (
+                not item.get("deleted")
+                and not (kind == "remoteWhenToLeavePlan" and item.get("lifecycle") == "DELETED")
+            )
+        ]
 
     def owned(self, kind: str, *, include_deleted: bool = False) -> list[dict[str, Any]]:
         return [
@@ -119,6 +171,7 @@ class FlightyClient:
             "Accept-Encoding": "gzip",
             "User-Agent": self.settings.user_agent,
             "X-Flighty-Locale": self.settings.locale,
+            "X-Flighty-Client-Capabilities": capability_header(),
         }
         if self.settings.build_token:
             headers["X-Flighty-Build-Token"] = self.settings.build_token
@@ -173,6 +226,8 @@ class FlightyClient:
         if endpoint.request:
             if payload is None:
                 raise FlightyError(f"{operation} requires a payload matching {endpoint.request}.")
+            if operation == "register_device":
+                payload = {"capabilities": client_capabilities(), **payload}
             content = proto.encode(endpoint.request, payload)
         elif endpoint.json_body:
             if payload is None:
@@ -231,7 +286,7 @@ class FlightyClient:
         meta: dict[str, Any] = {
             "status": status,
             "operation": operation,
-            "schema_version": "4.11.1",
+            "schema_version": SCHEMA_VERSION,
             "rate_limits": "undocumented",
         }
         if etag:
@@ -334,8 +389,8 @@ class FlightyClient:
                         continue
                     # ID alone is insufficient: friend records can share the same flight ID.
                     key: tuple[str, ...]
-                    if item.get("id"):
-                        key = (str(item.get("userId", "")), str(item["id"]))
+                    if item.get("id") or item.get("planId"):
+                        key = (str(item.get("userId", "")), str(item.get("id") or item["planId"]))
                     elif item.get("flightId"):
                         key = (str(item.get("userId", "")), str(item["flightId"]))
                     else:
@@ -392,11 +447,21 @@ class FlightyClient:
                 raise FlightyError("Each action payload must be a JSON object.")
             if body.get("ownerUserId") and body["ownerUserId"] != owner:
                 raise FlightyError("Changing a different owner's data is not supported.")
+            plan_operation = ""
+            if action == "whenToLeavePlanChangeAction":
+                plan_operation = validate_plan_change(body)
+            if action == "deviceChangeAction":
+                body.setdefault("capabilities", client_capabilities())
+            if action == "passportSharedAction":
+                year = body.get("year")
+                if type(year) is not int or not 1 <= year <= 9999:
+                    raise FlightyError("Passport sharing requires a year between 1 and 9999.")
             for key in ("flightId", "ownerUserId", "otherUserId", "airportId", "connectionId"):
                 if body.get(key):
                     uuid_text(body[key])
-            destructive = any(
-                word in action.casefold() for word in ("delete", "remove", "revoke", "bulk")
+            destructive = (
+                any(word in action.casefold() for word in ("delete", "remove", "revoke", "bulk"))
+                or plan_operation == "DELETE"
             )
             if destructive and not confirm_destructive:
                 raise FlightyError("Destructive sync actions require confirm_destructive=true.")
